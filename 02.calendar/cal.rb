@@ -18,7 +18,7 @@ totaldate = Date.new(year, month, -1).day
 week = %w[日 月 火 水 木 金 土]
 
 ## カレンダーを出力する
-puts month.to_s.rjust(8) + '月 ' + year.to_s
+puts month.to_s.rjust(7) + '月 ' + year.to_s
 puts week.join(' ')
 print '   ' * startwday
 days = startwday
