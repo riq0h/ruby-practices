@@ -44,4 +44,3 @@ elsif frames[11] == [10, 0] || frames[9] == [10, 0]
   point -= frames[11].first # 計算結果から余剰加点を除外して得点表示
   puts point
 end
-
