@@ -20,15 +20,15 @@ end
 
 point = 0
 
-frames[0..9].each_with_index do |frame, index| # 条件分岐を要するフレームの加点処理
+frames[0..9].each_with_index do |frame, index|
   point += frame.sum
   # 連続ストライクの場合、2つ先のフレームの1投目も得点となる
   point += frames[index + 2].first if frame == [10, 0] && frames[index + 1].first == 10
-  if frame == [10, 0] # ストライク1回のみの場合
-    point += frames[index + 1].sum # 次のフレームの合計値が得点となる
+  if frame == [10, 0]
+    point += frames[index + 1].sum
   end
-  if frame.sum == 10 && frame != [10, 0] # スペアの場合
-    point += frames[index + 1].first # 次のフレームの1投目が得点となる
+  if frame.sum == 10 && frame != [10, 0]
+    point += frames[index + 1].first 
   end
 end
 
