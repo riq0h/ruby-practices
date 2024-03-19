@@ -20,7 +20,10 @@ puts week.join(' ')
 print "\s\s\s" * first_day.wday
 
 (first_day..last_day).each do |date|
-  printf date == Date.today ? "\e[7m%2d\e[0m\s" : "%2d\s", date.day
+  day_string = date.day.to_s.rjust(2, "\s")
+  day_string = "\e[7m#{day_string}\e[0m" if date == Date.today
+  print day_string
+  print "\s"
   puts if date.saturday?
 end
 puts
