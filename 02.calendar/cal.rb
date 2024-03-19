@@ -22,8 +22,8 @@ print "\s\s\s" * first_day.wday
 (first_day..last_day).each do |date|
   day_string = date.day.to_s.rjust(2, "\s")
   day_string = "\e[7m#{day_string}\e[0m" if date == Date.today
-  print day_string
-  print "\s"
+  print "#{day_string}\s"
   puts if date.saturday?
 end
 puts
+
