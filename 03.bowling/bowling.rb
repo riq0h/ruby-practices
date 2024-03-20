@@ -13,34 +13,19 @@ scores.each do |s|
   end
 end
 
-frames = []
-shots.each_slice(2) do |s|
-  frames << s
-end
+frames = shots.each_slice(2).to_a
 
 point = 0
+strike = [10, 0]
 
-frames[0..9].each_with_index do |frame, index|
+frames[0..8].each_with_index do |frame, index|
   point += frame.sum
   # 連続ストライクの場合、2つ先のフレームの1投目も得点となる
-  point += frames[index + 2].first if frame == [10, 0] && frames[index + 1].first == 10
-  if frame == [10, 0]
-    point += frames[index + 1].sum
-  end
-  if frame.sum == 10 && frame != [10, 0]
-    point += frames[index + 1].first 
-  end
+  point += frames[index + 2].first if frame == strike && frames[index + 1] == strike
+  point += frames[index + 1].sum if frame == strike
+  point += frames[index + 1].first if frame.sum == 10 && frame != strike
 end
 
-frames[10, 11].each do |frame| # 条件分岐を要しないフレームの加点処理
-  point += frame.sum
-end
+frames[9..11].map { |frame| point += frame.sum } # 条件分岐を要しない加点処理
 
-point -= frames[10].sum if frames[10] # 計算結果から余剰加点を除外
-
-if frames[11].nil? # 3投目が存在しなかった場合は得点を表示して終了
-  puts point
-elsif frames[11] == [10, 0] || frames[9] == [10, 0]
-  point -= frames[11].first # 計算結果から余剰加点を除外して得点表示
-  puts point
-end
+puts point
