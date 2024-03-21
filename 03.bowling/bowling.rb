@@ -26,6 +26,7 @@ frames[0..8].each_with_index do |frame, index|
   point += frames[index + 1].first if frame.sum == 10 && frame != strike
 end
 
-frames[9..11].map { |frame| point += frame.sum } # 条件分岐を要しない加点処理
+point += frames[9..11].flatten.sum
+# point += frames[9..11].sum{|frame| frame.sum} # ご提案頂いた例の回答
 
 puts point
