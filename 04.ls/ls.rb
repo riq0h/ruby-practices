@@ -4,38 +4,34 @@ COLUMNS = 3
 files = []
 
 def run(files)
-  served = serve(files)
-  sliced = slice(served)
-  filled = fill(sliced)
-  arranged(filled)
+  served_files = serve_files(files)
+  sliced_files = slice_files(served_files)
+  filled_files = fill_files(sliced_files)
+  arrange_files(filled_files)
 end
 
-def serve(files)
-  files.concat(Dir.glob('*'))
+def serve_files(_files)
+  Dir.glob('*')
 end
 
-def slice(served)
-  element = if (served.size % COLUMNS).zero?
-              served.size / COLUMNS
-            else
-              served.size / COLUMNS + 1
-            end
-  served.each_slice(element).to_a
+def slice_files(served_files)
+  columns_size = served_files.size.ceildiv(COLUMNS)
+  served_files.each_slice(columns_size).to_a
 end
 
-def fill(sliced)
-  array_size = sliced.map(&:size).max
-  sliced.each do |slice|
+def fill_files(sliced_files)
+  array_size = sliced_files.map(&:size).max
+  sliced_files.each do |slice|
     slice << '' while slice.size < array_size
   end
-  sliced.transpose
+  sliced_files.transpose
 end
 
-def arranged(filled)
-  element2 = filled.flatten.map(&:size).max
-  filled.each do |arrange|
+def arrange_files(filled_files)
+  string_count = filled_files.flatten.map(&:size).max
+  filled_files.each do |arrange|
     arrange.each do |arranged|
-      print arranged.ljust(element2 + 5)
+      print arranged.ljust(string_count + 5)
     end
     puts
   end
