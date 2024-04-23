@@ -1,35 +1,34 @@
 # frozen_string_literal: true
 
 COLUMNS = 3
-files = []
 
-def run(files)
-  served_files = serve_files(files)
-  sliced_files = slice_files(served_files)
-  filled_files = fill_files(sliced_files)
-  arrange_files(filled_files)
+def run
+  listed_string = list_string
+  string_matrix = slice_string(listed_string)
+  filled_string = fill_string(string_matrix)
+  arrange_string(filled_string)
 end
 
-def serve_files(_files)
+def list_string
   Dir.glob('*')
 end
 
-def slice_files(served_files)
-  columns_size = served_files.size.ceildiv(COLUMNS)
-  served_files.each_slice(columns_size).to_a
+def slice_string(listed_string)
+  columns_size = listed_string.size.ceildiv(COLUMNS)
+  listed_string.each_slice(columns_size).to_a
 end
 
-def fill_files(sliced_files)
-  array_size = sliced_files.map(&:size).max
-  sliced_files.each do |slice|
+def fill_string(string_matrix)
+  array_size = string_matrix.map(&:size).max
+  string_matrix.each do |slice|
     slice << '' while slice.size < array_size
   end
-  sliced_files.transpose
+  string_matrix.transpose
 end
 
-def arrange_files(filled_files)
-  string_count = filled_files.flatten.map(&:size).max
-  filled_files.each do |arrange|
+def arrange_string(filled_string)
+  string_count = filled_string.flatten.map(&:size).max
+  filled_string.each do |arrange|
     arrange.each do |arranged|
       print arranged.ljust(string_count + 5)
     end
@@ -37,4 +36,4 @@ def arrange_files(filled_files)
   end
 end
 
-run(files)
+run
