@@ -3,34 +3,34 @@
 COLUMNS = 3
 
 def run
-  listed_string = list_string
-  string_matrix = slice_string(listed_string)
-  filled_string = fill_string(string_matrix)
-  arrange_string(filled_string)
+  listed_filenames = list_filenames
+  filenames_matrix = slice_filenames(listed_filenames)
+  filled_filenames = fill_filenames(filenames_matrix)
+  arrange_filenames(filled_filenames)
 end
 
-def list_string
+def list_filenames
   Dir.glob('*')
 end
 
-def slice_string(listed_string)
-  columns_size = listed_string.size.ceildiv(COLUMNS)
-  listed_string.each_slice(columns_size).to_a
+def slice_filenames(listed_filenames)
+  columns_size = listed_filenames.size.ceildiv(COLUMNS)
+  listed_filenames.each_slice(columns_size).to_a
 end
 
-def fill_string(string_matrix)
-  array_size = string_matrix.map(&:size).max
-  string_matrix.each do |slice|
+def fill_filenames(filenames_matrix)
+  array_size = filenames_matrix.map(&:size).max
+  filenames_matrix.each do |slice|
     slice << '' while slice.size < array_size
   end
-  string_matrix.transpose
+  filenames_matrix.transpose
 end
 
-def arrange_string(filled_string)
-  string_count = filled_string.flatten.map(&:size).max
-  filled_string.each do |arrange|
+def arrange_filenames(filled_filenames)
+  filenames_count = filled_filenames.flatten.map(&:size).max
+  filled_filenames.each do |arrange|
     arrange.each do |arranged|
-      print arranged.ljust(string_count + 5)
+      print arranged.ljust(filenames_count + 5)
     end
     puts
   end
