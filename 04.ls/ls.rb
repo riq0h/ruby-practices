@@ -1,5 +1,11 @@
 # frozen_string_literal: true
 
+require 'optparse'
+opt = OptionParser.new
+params = {}
+opt.on('-a') { |x| params[:a] = x }
+opt.parse(ARGV)
+
 COLUMNS = 3
 
 def run
@@ -10,7 +16,11 @@ def run
 end
 
 def list_filenames
-  Dir.glob('*')
+  if ARGV[0]
+    Dir.glob('*', File::FNM_DOTMATCH)
+  else
+    Dir.glob('*')
+  end
 end
 
 def slice_filenames(listed_filenames)
