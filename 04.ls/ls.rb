@@ -5,16 +5,21 @@ require 'optparse'
 COLUMNS = 3
 
 def run
-  listed_filenames = list_filenames
+  listed_filenames = option_filenames
   filenames_matrix = slice_filenames(listed_filenames)
   filled_filenames = fill_filenames(filenames_matrix)
   arrange_filenames(filled_filenames)
 end
 
-def list_filenames
-  params = ARGV.getopts('a')
+def option_filenames
+  params = ARGV.getopts('a', 'r')
   flags = params['a'] ? File::FNM_DOTMATCH : 0
-  Dir.glob('*', flags)
+  listing = Dir.glob('*', flags)
+  if params['r']
+    listing.reverse
+  else
+    listing
+  end
 end
 
 def slice_filenames(listed_filenames)
