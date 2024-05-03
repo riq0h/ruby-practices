@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'optparse'
+
 COLUMNS = 3
 
 def run
@@ -10,7 +12,9 @@ def run
 end
 
 def list_filenames
-  Dir.glob('*')
+  params = ARGV.getopts('a')
+  flags = params['a'] ? File::FNM_DOTMATCH : 0
+  Dir.glob('*', flags)
 end
 
 def slice_filenames(listed_filenames)
