@@ -12,9 +12,14 @@ def run
 end
 
 def list_filenames
-  params = ARGV.getopts('a')
+  params = ARGV.getopts('a', 'r')
   flags = params['a'] ? File::FNM_DOTMATCH : 0
-  Dir.glob('*', flags)
+  filenames = Dir.glob('*', flags)
+  if params['r']
+    filenames.reverse
+  else
+    filenames
+  end
 end
 
 def slice_filenames(listed_filenames)
