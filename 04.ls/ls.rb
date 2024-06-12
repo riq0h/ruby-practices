@@ -64,10 +64,12 @@ def output_file_datails(filenames)
 end
 
 def owner_info(file_stat, filenames)
-  " #{file_stat.nlink}" \
-  " #{Etc.getpwuid(file_stat.uid).name}" \
-  " #{Etc.getgrgid(file_stat.gid).name}" <<
-    " #{file_stat.size}".rjust(max_filename_length(filenames))
+  [
+    file_stat.nlink.to_s.prepend(' '),
+    Etc.getpwuid(file_stat.uid).name,
+    Etc.getgrgid(file_stat.gid).name,
+    file_stat.size.to_s.rjust(max_filename_length(filenames))
+  ].join(' ')
 end
 
 def symbolic(filenames)
@@ -91,7 +93,7 @@ def max_filename_length(filenames)
 end
 
 def time_stamp(file_stat)
-  " #{file_stat.mtime.strftime('%_m月 %_d %H:%M')}"
+  file_stat.mtime.strftime('%_m月 %_d %H:%M')
 end
 
 def total_file_blocks(filenames)
