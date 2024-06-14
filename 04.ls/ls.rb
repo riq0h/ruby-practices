@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# lsコマンド5
 
 require 'optparse'
 require 'etc'
