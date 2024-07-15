@@ -2,54 +2,76 @@
 
 require 'optparse'
 
-total_lines = 0
-total_words = 0
-total_bytes = 0
+def parse_options
+  options = {}
+  OptionParser.new do |opts|
+    opts.on('-l') { options[:lines] = true }
+    opts.on('-w') { options[:words] = true }
+    opts.on('-c') { options[:bytes] = true }
+  end.parse!
+  options = { bytes: true, lines: true, words: true } if options.empty?
+  [options, ARGV.empty? ? [ARGF] : ARGV]
+end
 
-options = {}
-OptionParser.new do |opts|
-  opts.on('-l') { options[:lines] = true }
-  opts.on('-w') { options[:words] = true }
-  opts.on('-c') { options[:bytes] = true }
-end.parse!
+def count_file_stats(input)
+  lines = words = bytes = 0
+  input.each_line do |line|
+    lines += 1
+    words += line.split.size
+    bytes += line.bytesize
+  end
+  [lines, words, bytes]
+end
 
-input_sources = ARGV.empty? ? [ARGF] : ARGV
-
-input_sources.each do |source|
-  lines = 0
-  words = 0
-  bytes = 0
-
-  begin
+def process_input(source)
+  if source == ARGF || File.exist?(source)
     input = source == ARGF ? ARGF.read : File.read(source)
-
-    input.each_line do |line|
-      lines += 1
-      words += line.split.size
-      bytes += line.bytesize
-    end
-
-    total_lines += lines
-    total_words += words
-    total_bytes += bytes
-
-    options = { bytes: true, lines: true, words: true } if options.empty?
-    result = []
-    result << lines if options[:lines]
-    result << words if options[:words]
-    result << bytes if options[:bytes]
-
-    puts "#{result.join(' ')} #{source == ARGF ? '' : source}"
-  rescue Errno::ENOENT
+    count_file_stats(input)
+  else
     puts "wc: #{source}: そのようなファイルやディレクトリはありません"
+    exit
   end
 end
 
-if input_sources.size > 1
-  total_result = []
-  total_result << total_lines if options[:lines]
-  total_result << total_words if options[:words]
-  total_result << total_bytes if options[:bytes]
-
-  puts "#{total_result.join(' ')} 合計"
+def update_totals(totals, stats)
+  totals.zip(stats).map { |total, stat| total + stat }
 end
+
+def update_max_widths(max_widths, stats)
+  max_widths.zip(stats).map { |max, stat| [max, stat.to_s.length].max }
+end
+
+def format_result(stats, max_widths, options)
+  result = []
+  %i[lines words bytes].each_with_index do |key, index|
+    result << stats[index].to_s.rjust(max_widths[index]) if options[key]
+  end
+  result.join(' ')
+end
+
+def print_result(result, source)
+  puts "#{result} #{source == ARGF ? '' : source}"
+end
+
+def print_total(total_stats, max_widths, options)
+  total_result = format_result(total_stats, max_widths, options)
+  puts "#{total_result} 合計"
+end
+
+def process_input_sources(input_sources, options)
+  total_stats = [0, 0, 0]
+  max_widths = [0, 0, 0]
+
+  input_sources.each do |source|
+    stats = process_input(source)
+    total_stats = update_totals(total_stats, stats)
+    max_widths = update_max_widths(max_widths, stats)
+    result = format_result(stats, max_widths, options)
+    print_result(result, source)
+  end
+
+  print_total(total_stats, max_widths, options) if input_sources.size > 1
+end
+
+options, input_sources = parse_options
+process_input_sources(input_sources, options)
