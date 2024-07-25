@@ -2,6 +2,15 @@
 
 require 'optparse'
 
+def main
+  options, sources = parse_options
+  file_stats = collect_file_stats(sources)
+  total_stats = calculate_total_stats(file_stats)
+  max_widths = calculate_max_widths(file_stats, total_stats)
+  print_file_stats(file_stats, max_widths, options)
+  print_file_stats([['合計', total_stats]], max_widths, options) if sources.size > 1
+end
+
 def parse_options
   options = {}
   OptionParser.new do |opts|
@@ -10,67 +19,39 @@ def parse_options
     opts.on('-c') { options[:bytes] = true }
   end.parse!
   options = { bytes: true, lines: true, words: true } if options.empty?
-  sources = ARGV.empty? ? ['-'] : ARGV
+  sources = ARGV.empty? ? [''] : ARGV
   [options, sources]
 end
 
-def input_stream_sources(input_sources, options)
-  total_stats = { lines: 0, words: 0, bytes: 0 }
-  max_widths = { lines: 0, words: 0, bytes: 0 }
-
-  input_sources.each do |source|
-    stats = input_stream(source)
-    total_stats = update_totals(total_stats, stats)
-    max_widths = update_max_widths(max_widths, stats)
-    result = format_result(stats, max_widths, options)
-    print_result(result, source)
-  end
-
-  print_total(total_stats, max_widths, options) if input_sources.size > 1
-end
-
-def input_stream(source)
-  if source == '-'
-    count_file_stats(ARGF)
-  else
-    count_file_stats(File.read(source))
+def collect_file_stats(sources)
+  sources.map do |source|
+    input = source.empty? ? ARGF.read : File.read(source)
+    stats = { lines: input.lines.count, words: input.split.size, bytes: input.bytesize }
+    [source, stats]
   end
 end
 
-def count_file_stats(input)
-  stats = { lines: 0, words: 0, bytes: 0 }
-  input.each_line do |line|
-    stats[:lines] += 1
-    stats[:words] += line.split.size
-    stats[:bytes] += line.bytesize
+def calculate_total_stats(file_stats)
+  file_stats.reduce({ lines: 0, words: 0, bytes: 0 }) do |total, (_, stats)|
+    total.merge(stats) { |_, a, b| a + b }
   end
-  stats
 end
 
-def update_totals(totals, stats)
-  totals.merge(stats) { |_key, total, stat| total + stat }
-end
-
-def update_max_widths(max_widths, stats)
-  max_widths.merge(stats) { |_key, max, stat| [max, stat.to_s.length].max }
+def calculate_max_widths(file_stats, total_stats)
+  (file_stats.map(&:last) + [total_stats]).each_with_object({ lines: 0, words: 0, bytes: 0 }) do |stats, max_widths|
+    max_widths.merge!(stats) { |_, max, stat| [max, stat.to_s.length].max }
+  end
 end
 
 def format_result(stats, max_widths, options)
-  result = {}
-  %i[lines words bytes].each do |key|
-    result[key] = stats[key].to_s.rjust(max_widths[key]) if options[key]
+  %i[lines words bytes].map { |key| stats[key].to_s.rjust(max_widths[key]) if options[key] }.compact.join(' ')
+end
+
+def print_file_stats(file_stats, max_widths, options)
+  file_stats.each do |source, stats|
+    result = format_result(stats, max_widths, options)
+    puts "#{result} #{source}"
   end
-  result.values.join(' ')
 end
 
-def print_result(result, source)
-  puts "#{result} #{source == '-' ? '' : source}"
-end
-
-def print_total(total_stats, max_widths, options)
-  total_result = format_result(total_stats, max_widths, options)
-  puts "#{total_result} 合計"
-end
-
-options, input_sources = parse_options
-input_stream_sources(input_sources, options)
+main
