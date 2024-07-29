@@ -3,12 +3,12 @@
 require 'optparse'
 
 def main
-  options, sources = parse_options
-  file_stats = collect_file_stats(sources)
+  options, filenames = parse_options
+  file_stats = collect_file_stats(filenames)
   total_stats = calculate_total_stats(file_stats)
-  max_widths = calculate_max_widths(file_stats, total_stats)
+  max_widths = calculate_max_widths(total_stats)
   print_file_stats(file_stats, max_widths, options)
-  print_file_stats([{ filename: '合計', **total_stats }], max_widths, options) if sources.size > 1
+  print_file_stats([total_stats], max_widths, options) if filenames.size > 1
 end
 
 def parse_options
@@ -19,19 +19,19 @@ def parse_options
     opts.on('-c') { options[:bytes] = true }
   end.parse!
   options = { bytes: true, lines: true, words: true } if options.empty?
-  sources = ARGV.empty? ? [''] : ARGV
-  [options, sources]
+  filenames = ARGV.empty? ? [''] : ARGV
+  [options, filenames]
 end
 
-def collect_file_stats(sources)
-  sources.map do |source|
-    input = source.empty? ? ARGF.read : File.read(source)
-    { filename: source, lines: input.lines.count, words: input.split.size, bytes: input.bytesize }
+def collect_file_stats(filenames)
+  filenames.map do |filename|
+    input = filename.empty? ? ARGF.read : File.read(filename)
+    { filenames: filename, lines: input.lines.count, words: input.split.size, bytes: input.bytesize }
   end
 end
 
 def calculate_total_stats(file_stats)
-  total_stats = { lines: 0, words: 0, bytes: 0 }
+  total_stats = { filenames: '合計', lines: 0, words: 0, bytes: 0 }
   file_stats.each do |stats|
     total_stats[:lines] += stats[:lines]
     total_stats[:words] += stats[:words]
@@ -40,10 +40,9 @@ def calculate_total_stats(file_stats)
   total_stats
 end
 
-def calculate_max_widths(file_stats, total_stats)
-  all_stats = file_stats + [total_stats]
+def calculate_max_widths(total_stats)
   %i[lines words bytes].each_with_object({}) do |key, max_widths|
-    max_widths[key] = all_stats.map { |stats| stats[key].to_s.length }.max
+    max_widths[key] = total_stats[key].to_s.length
   end
 end
 
@@ -56,7 +55,7 @@ end
 def print_file_stats(file_stats, max_widths, options)
   file_stats.each do |stats|
     result = format_result(stats, max_widths, options)
-    puts "#{result} #{stats[:filename]}"
+    puts [result, stats[:filenames]].join(' ')
   end
 end
 
