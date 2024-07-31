@@ -9,7 +9,7 @@ def main
   max_widths = calculate_max_widths(total_stat)
 
   file_stats << total_stat if filenames.size > 1
-  file_stats.each { |file_stat| puts format_result(file_stat, max_widths, options).join(' ') }
+  file_stats.each { |file_stat| puts format_row(file_stat, max_widths, options) }
 end
 
 def parse_options
@@ -50,11 +50,11 @@ def calculate_max_widths(total_stat)
   %i[lines words bytes].to_h { |key| [key, total_stat[key].to_s.length] }
 end
 
-def format_result(stats, max_widths, options)
+def format_row(stats, max_widths, options)
   result = %i[lines words bytes].filter_map do |key|
     stats[key].to_s.rjust(max_widths[key]) if options[key]
   end
-  result << stats[:filename]
+  [*result, stats[:filename]].join(' ')
 end
 
 main
