@@ -51,10 +51,10 @@ def calculate_max_widths(total_stat)
 end
 
 def format_row(stats, max_widths, options)
-  row = %i[lines words bytes].filter_map do |key|
+  columns = %i[lines words bytes].filter_map do |key|
     stats[key].to_s.rjust(max_widths[key]) if options[key]
   end
-  [*row, stats[:filename]].join(' ')
+  [*columns, stats[:filename]].join(' ')
 end
 
 main
