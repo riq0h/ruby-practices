@@ -1,37 +1,54 @@
 # frozen_string_literal: true
 
 class Frame
+  attr_reader :shots
+
+  def initialize(shots)
+    @shots = shots
+  end
+
   def self.create_frames(shots)
-    shots.each_slice(2).to_a
+    shots.each_slice(2).map { |frame_shots| new(frame_shots) }
   end
 
-  def self.frame_score(frame, index, frames)
-    score = frame.sum
-    if strike?(frame)
-      score += strike_bonus(index, frames)
-    elsif spare?(frame)
-      score += spare_bonus(index, frames)
-    end
-    score
-  end
-
-  def self.strike?(frame)
-    frame == [10, 0]
-  end
-
-  def self.spare?(frame)
-    frame.sum == 10 && !strike?(frame)
-  end
-
-  def self.strike_bonus(index, frames)
-    if strike?(frames[index + 1])
-      frames[index + 1].sum + frames[index + 2].first
+  def score(next_frame = nil, after_next_frame = nil)
+    base_score = @shots.sum
+    if strike?
+      base_score + strike_bonus(next_frame, after_next_frame)
+    elsif spare?
+      base_score + spare_bonus(next_frame)
     else
-      frames[index + 1].sum
+      base_score
     end
   end
 
-  def self.spare_bonus(index, frames)
-    frames[index + 1].first
+  def strike?
+    @shots == [10, 0]
+  end
+
+  def spare?
+    @shots.sum == 10 && !strike?
+  end
+
+  private
+
+  def strike_bonus(next_frame, after_next_frame)
+    if next_frame&.strike?
+      next_frame.shots.first + second_bonus_ball(next_frame, after_next_frame)
+    else
+      next_frame&.shots&.sum || 0
+    end
+  end
+
+  def second_bonus_ball(next_frame, after_next_frame)
+    if after_next_frame
+      after_next_frame.shots.first
+    else
+      next_frame.shots.last
+    end
+  end
+
+  def spare_bonus(next_frame)
+    next_frame&.shots&.first || 0
   end
 end
