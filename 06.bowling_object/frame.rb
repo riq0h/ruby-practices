@@ -12,14 +12,7 @@ class Frame
   end
 
   def score(next_frame = nil, after_next_frame = nil)
-    base_score = @shots.sum
-    if strike?
-      base_score + strike_bonus(next_frame, after_next_frame)
-    elsif spare?
-      base_score + spare_bonus(next_frame)
-    else
-      base_score
-    end
+    @shots.sum + bonus_score(next_frame, after_next_frame)
   end
 
   def strike?
@@ -32,11 +25,21 @@ class Frame
 
   private
 
+  def bonus_score(next_frame, after_next_frame)
+    if strike?
+      strike_bonus(next_frame, after_next_frame)
+    elsif spare?
+      spare_bonus(next_frame)
+    else
+      0
+    end
+  end
+
   def strike_bonus(next_frame, after_next_frame)
-    if next_frame&.strike?
+    if next_frame.strike?
       next_frame.shots.first + second_bonus_ball(next_frame, after_next_frame)
     else
-      next_frame&.shots&.sum || 0
+      next_frame.shots.sum
     end
   end
 
@@ -49,6 +52,6 @@ class Frame
   end
 
   def spare_bonus(next_frame)
-    next_frame&.shots&.first || 0
+    next_frame.shots.first
   end
 end
