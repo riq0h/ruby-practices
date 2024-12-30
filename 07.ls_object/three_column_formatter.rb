@@ -2,16 +2,14 @@
 
 require_relative 'constants'
 
-class OutputFormatter
-  include Constants
-
+class ThreeColumnFormatter
   def output(filenames)
-    rows = filenames.size.ceildiv(COLUMNS)
+    rows = filenames.size.ceildiv(Constants::COLUMNS)
     pads = pad_created(filenames, rows)
     (0...rows).each do |row|
-      COLUMNS.times do |column|
+      Constants::COLUMNS.times do |column|
         index = row + column * rows
-        print filenames[index].ljust(pads[column] + COLUMNS) if filenames[index]
+        print filenames[index].ljust(pads[column] + Constants::COLUMNS) if filenames[index]
       end
       puts
     end

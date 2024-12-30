@@ -4,54 +4,55 @@ require 'etc'
 require_relative 'constants'
 
 class FileInfo
-  include Constants
-
-  def file_details(file, filenames)
-    file_stat = File::Stat.new(file)
-    [
-      TYPES[file_stat.ftype],
-      file_mode(file_stat),
-      owner_info(file_stat, filenames),
-      time_stamp(file_stat),
-      symbolic(file)
-    ].join
+  def initialize(filename)
+    @filename = filename
+    @stat = File::Stat.new(filename)
   end
 
-  def total_file_blocks(filenames)
-    blocks = filenames.map { |file| File::Stat.new(file).blocks }
-    "total #{blocks.sum}"
+  def details
+    [
+      type,
+      mode,
+      owner_info,
+      time_stamp,
+      symbolic
+    ].join
   end
 
   private
 
-  def owner_info(file_stat, filenames)
+  def type
+    Constants::TYPES[@stat.ftype]
+  end
+
+  def mode
+    file_count = @stat.mode.to_s(8).slice(-3, 3)
+    file_count.split('').map { |f| Constants::PERMISSIONS[f] }.join
+  end
+
+  def owner_info
     [
-      file_stat.nlink.to_s.prepend(' '),
-      Etc.getpwuid(file_stat.uid).name,
-      Etc.getgrgid(file_stat.gid).name,
-      file_stat.size.to_s.rjust(max_filename_length(filenames))
+      @stat.nlink.to_s.prepend(' '),
+      Etc.getpwuid(@stat.uid).name,
+      Etc.getgrgid(@stat.gid).name,
+      @stat.size.to_s.rjust(max_filename_length),
+      ''
     ].join(' ')
   end
 
-  def symbolic(filenames)
-    if File.lstat(filenames).symlink?
-      " #{filenames} -> #{File.readlink(filenames)}"
+  def time_stamp
+    @stat.mtime.strftime(' %_m月 %_d %H:%M')
+  end
+
+  def symbolic
+    if File.lstat(@filename).symlink?
+      " #{@filename} -> #{File.readlink(@filename)}"
     else
-      " #{filenames}"
+      " #{@filename}"
     end
   end
 
-  def file_mode(file_stat)
-    file_count = file_stat.mode.to_s(8).slice(-3, 3)
-    file_permission = file_count.split('').map { |file| PERMISSIONS[file] }
-    file_permission.join('')
-  end
-
-  def max_filename_length(filenames)
-    filenames.map { |file| File.size(file) }.max.to_s.length + MARGIN
-  end
-
-  def time_stamp(file_stat)
-    file_stat.mtime.strftime(' %_m月 %_d %H:%M')
+  def max_filename_length
+    @stat.size.to_s.length + Constants::MARGIN
   end
 end

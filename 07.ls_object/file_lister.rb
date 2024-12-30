@@ -1,36 +1,29 @@
 # frozen_string_literal: true
 
 require 'optparse'
-require_relative 'output_formatter'
-require_relative 'file_info'
 
 class FileLister
-  def initialize
-    @formatter = OutputFormatter.new
-    @file_info = FileInfo.new
-  end
-
   def run
-    params = ARGV.getopts('a', 'r', 'l')
-    filenames = get_filenames(params)
-    params['l'] ? output_file_details(filenames) : output(filenames)
+    options = {}
+    OptionParser.new do |opts|
+      opts.on('-a') { |v| options[:a] = v }
+      opts.on('-r') { |v| options[:r] = v }
+      opts.on('-l') { |v| options[:l] = v }
+    end.parse!
+
+    filenames = get_filenames(options)
+
+    if options[:l]
+      DetailedLister.new.list(filenames)
+    else
+      ThreeColumnFormatter.new.output(filenames)
+    end
   end
 
   private
 
-  def get_filenames(params)
-    filenames = params['a'] ? Dir.glob('*', File::FNM_DOTMATCH) : Dir.glob('*')
-    params['r'] ? filenames.reverse : filenames
-  end
-
-  def output(filenames)
-    @formatter.output(filenames)
-  end
-
-  def output_file_details(filenames)
-    puts @file_info.total_file_blocks(filenames)
-    filenames.each do |file|
-      puts @file_info.file_details(file, filenames)
-    end
+  def get_filenames(options)
+    filenames = options[:a] ? Dir.glob('*', File::FNM_DOTMATCH) : Dir.glob('*')
+    options[:r] ? filenames.reverse : filenames
   end
 end
