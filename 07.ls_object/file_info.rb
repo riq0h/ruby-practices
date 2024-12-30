@@ -19,6 +19,10 @@ class FileInfo
     ].join
   end
 
+  def blocks
+    @stat.blocks
+  end
+
   private
 
   def type
@@ -32,10 +36,10 @@ class FileInfo
 
   def owner_info
     [
-      @stat.nlink.to_s.prepend(' '),
-      Etc.getpwuid(@stat.uid).name,
-      Etc.getgrgid(@stat.gid).name,
-      @stat.size.to_s.rjust(max_filename_length),
+      @stat.nlink.to_s.rjust(2),
+      Etc.getpwuid(@stat.uid).name.ljust(8),
+      Etc.getgrgid(@stat.gid).name.ljust(8),
+      @stat.size.to_s.rjust(8),
       ''
     ].join(' ')
   end
@@ -50,9 +54,5 @@ class FileInfo
     else
       " #{@filename}"
     end
-  end
-
-  def max_filename_length
-    @stat.size.to_s.length + Constants::MARGIN
   end
 end
